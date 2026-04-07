@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Hospital Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Patient Appointments</h1>
+            <div class="header-right">
+                <p>🏥 <strong>{{ hospital }}</strong> | 👨‍⚕️ <strong>Dr. {{ session.username }}</strong></p>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">Home</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <h2 style="margin: 30px 0 20px 0; color: #1e293b; font-size: 24px; font-weight: 700;">Your Assigned Patients</h2>
+        
+        {% if patients %}
+            <div class="patient-list">
+                {% for patient in patients %}
+                    <div class="patient-card {% if patient.is_today %}today{% endif %}">
+                        <div class="patient-info">
+                            <div class="patient-header">
+                                <h3>{{ patient.name }}</h3>
+                                {% if patient.is_today %}
+                                    <span class="badge badge-today">Today</span>
+                                {% endif %}
+                                {% if patient.has_prescription %}
+                                    <span class="badge badge-done">Treated</span>
+                                {% endif %}
+                            </div>
+                            <p><strong>Age:</strong> {{ patient.age }} years old</p>
+                            <p><strong>Chief Complaint:</strong> {{ patient.problem }}</p>
+                            <p><strong>Scheduled:</strong> {{ patient.appointment_time }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="status-{{ patient.status }}">
+                                    {% if patient.status == 'admitted' %}
+                                        Admitted
+                                    {% elif patient.status == 'treated' %}
+                                        Treated
+                                    {% else %}
+                                        {{ patient.status | title }}
+                                    {% endif %}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="patient-action">
+                            {% if not patient.has_prescription %}
+                                <a href="{{ url_for('prescription_form', appointment_id=patient.appointment_id) }}" 
+                                   class="btn btn-primary">Write Prescription</a>
+                            {% else %}
+                                <a href="{{ url_for('prescription_form', appointment_id=patient.appointment_id) }}" 
+                                   class="btn btn-secondary">View Prescription</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No patients assigned to you at the moment.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

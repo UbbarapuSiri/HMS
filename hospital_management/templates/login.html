@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('login') }}" class="navbar-logo">HMS</a>
+        </div>
+    </div>
+
+    <div class="home-container">
+        <div class="home-header">
+            <h1>Hospital Management System</h1>
+            <p>Simple, clear management for patient intake and doctor workflows</p>
+        </div>
+
+        <div class="login-options">
+            <div class="login-column">
+                <div class="login-card">
+                    <h2>Receptionist</h2>
+                    <p class="login-description">Manage patients and schedule appointments</p>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <input type="hidden" name="role" value="receptionist">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" required placeholder="Anna Carter">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hospital</label>
+                            <select name="hospital" required>
+                                <option value="">Choose hospital</option>
+                                {% for hospital in hospitals %}
+                                    <option value="{{ hospital }}">{{ hospital }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Login</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="login-column">
+                <div class="login-card">
+                    <h2>Doctor</h2>
+                    <p class="login-description">View patients and write prescriptions</p>
+
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <input type="hidden" name="role" value="doctor">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" required placeholder="Sarah Malik">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hospital</label>
+                            <select name="hospital" required>
+                                <option value="">Choose hospital</option>
+                                {% for hospital in hospitals %}
+                                    <option value="{{ hospital }}">{{ hospital }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="system-info">
+            <div class="info-section">
+                <h3>Four Hospitals</h3>
+                <ul>
+                    {% for hospital in hospitals %}
+                        <li>{{ hospital }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="info-section">
+                <h3>All Specialties</h3>
+                <p>Cardiology, Neurology, Orthopedics, Pediatrics, General Practice, Dermatology, Pulmonology, Endocrinology, Gastroenterology, Urology, ENT, and Ophthalmology.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

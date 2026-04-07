@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write Prescription</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Prescription Form</h1>
+            <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+        
+        <div class="patient-summary">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <strong>👤 Patient Name:</strong> {{ patient.name }}
+                </div>
+                <div class="summary-item">
+                    <strong>📅 Age:</strong> {{ patient.age }} years
+                </div>
+                <div class="summary-item">
+                    <strong>🏥 Hospital:</strong> {{ patient.hospital }}
+                </div>
+                <div class="summary-item">
+                    <strong>🏥 Chief Complaint:</strong> {{ patient.problem }}
+                </div>
+                <div class="summary-item">
+                    <strong>🕒 Appointment Time:</strong> {{ appointment.appointment_time }}
+                </div>
+                <div class="summary-item">
+                    <strong>📊 Current Status:</strong> <span class="status-{{ appointment.status }}">{{ appointment.status | title }}</span>
+                </div>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="two-columns">
+            <!-- Left: New Prescription Form -->
+            <div class="form-section">
+                <h3>➕ Create/Update Prescription</h3>
+                <form method="POST" action="{{ url_for('save_prescription') }}">
+                    <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                    
+                    <div class="form-group">
+                        <label>🔍 Diagnosis <span class="required">*</span></label>
+                        <textarea name="diagnosis" rows="3" required placeholder="Enter your clinical diagnosis based on examination..." maxlength="1000"></textarea>
+                        <small>Max 1000 characters</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>💊 Medicines Prescribed <span class="required">*</span></label>
+                        <textarea name="medicines" rows="5" required 
+                                  placeholder="Example:&#10;1. Aspirin - 500mg - Twice daily for 5 days&#10;2. Paracetamol - 650mg - Once daily after meals&#10;3. Amoxicillin - 250mg - Thrice daily for 7 days" 
+                                  maxlength="2000"></textarea>
+                        <small>Max 2000 characters - One medicine per line with dosage and frequency</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📌 Additional Notes (Optional)</label>
+                        <textarea name="notes" rows="3" 
+                                  placeholder="E.g., Follow up after 3 days, avoid heavy exercise, take medicines with food..." 
+                                  maxlength="500"></textarea>
+                        <small>Max 500 characters</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" style="width: 100%;">💾 Save Prescription</button>
+                </form>
+            </div>
+            
+            <!-- Right: Prescription History -->
+            <div class="list-section">
+                <h3>📜 Prescription History</h3>
+                {% if prescriptions %}
+                    <div class="prescription-list">
+                        {% for pres in prescriptions %}
+                            <div class="prescription-history">
+                                <div class="prescription-header">
+                                    <strong>📅 {{ pres.created_at.strftime('%Y-%m-%d %H:%M') }}</strong>
+                                    <span class="prescription-number">#{{ loop.revindex }}</span>
+                                </div>
+                                <div class="prescription-content">
+                                    <div class="pres-field">
+                                        <strong>🔍 Diagnosis</strong>
+                                        <p>{{ pres.diagnosis }}</p>
+                                    </div>
+                                    <div class="pres-field">
+                                        <strong>💊 Medicines</strong>
+                                        <p style="white-space: pre-wrap;">{{ pres.medicines }}</p>
+                                    </div>
+                                    {% if pres.notes %}
+                                        <div class="pres-field">
+                                            <strong>📌 Notes</strong>
+                                            <p>{{ pres.notes }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <hr>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-state">📭 No prescriptions created yet. This will be the first one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
