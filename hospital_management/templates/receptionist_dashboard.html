@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard - Hospital Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Receptionist Dashboard</h1>
+            <div class="header-right">
+                <p>🏥 <strong>{{ hospital }}</strong> | 👤 <strong>{{ session.username }}</strong></p>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">🚪 Logout</a>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="two-columns">
+            <!-- Left Column: Admit Patient Form -->
+            <div class="form-section">
+                <h2>➕ Admit New Patient</h2>
+                <form method="POST" action="{{ url_for('admit_patient') }}">
+                    <div class="form-group">
+                        <label>👤 Patient Name <span class="required">*</span></label>
+                        <input type="text" name="name" required placeholder="Full name of patient">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📅 Age <span class="required">*</span></label>
+                        <input type="number" name="age" min="0" max="120" required placeholder="Patient age">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🏥 Chief Complaint <span class="required">*</span></label>
+                        <textarea name="problem" rows="2" required placeholder="E.g., Chest pain, Fever, Headache..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>👨‍⚕️ Doctor Specialization <span class="required">*</span></label>
+                        <select id="specialization" required onchange="loadDoctors()">
+                            <option value="">-- Select Specialization --</option>
+                            {% for spec in specializations %}
+                                <option value="{{ spec }}">{{ spec }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>⚕️ Select Doctor <span class="required">*</span></label>
+                        <select name="doctor" id="doctorSelect" required>
+                            <option value="">-- Select Doctor --</option>
+                        </select>
+                        <small id="doctorStatus"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🕒 Appointment Time <span class="required">*</span></label>
+                        <input type="datetime-local" name="appointment_time" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" style="width: 100%;">✅ Admit Patient</button>
+                </form>
+            </div>
+            
+            <!-- Right Column: Today's Admitted Patients -->
+            <div class="list-section">
+                <h2>📊 Admitted Patients</h2>
+                {% if patients %}
+                    <div class="scroll-table">
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>👤 Name</th>
+                                    <th>📅 Age</th>
+                                    <th>🏥 Problem</th>
+                                    <th>🕒 Admitted On</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                <tr>
+                                    <td><strong>{{ patient.name }}</strong></td>
+                                    <td>{{ patient.age }}</td>
+                                    <td>{{ patient.problem }}</td>
+                                    <td>{{ patient.admitted_datetime.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty-state">📭 No patients admitted yet. Start by admitting a patient!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const doctors = {{ doctors | tojson }};
+        
+        function loadDoctors() {
+            const specialization = document.getElementById('specialization').value;
+            const doctorSelect = document.getElementById('doctorSelect');
+            const doctorStatus = document.getElementById('doctorStatus');
+            
+            doctorSelect.innerHTML = '<option value="">-- Select Doctor --</option>';
+            
+            if (!specialization) {
+                doctorStatus.textContent = '';
+                return;
+            }
+            
+            const filteredDoctors = doctors.filter(d => d.specialization === specialization);
+            
+            if (filteredDoctors.length === 0) {
+                doctorStatus.textContent = '⚠️ No doctors available for this specialization';
+                doctorStatus.style.color = '#f59e0b';
+                doctorSelect.disabled = true;
+            } else {
+                doctorStatus.textContent = `✓ ${filteredDoctors.length} doctor(s) available`;
+                doctorStatus.style.color = '#10b981';
+                doctorSelect.disabled = false;
+                
+                filteredDoctors.forEach(doctor => {
+                    const option = document.createElement('option');
+                    option.value = doctor.id;
+                    option.textContent = `Dr. ${doctor.username}`;
+                    doctorSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
